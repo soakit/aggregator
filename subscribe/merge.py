@@ -15,23 +15,18 @@ PATH = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 
 def main(args: argparse.Namespace) -> None:
+    url = utils.trim(text=args.url)
+    if not url:
+        logger.error("please provide the url for the subscriptions")
+        return
+
     filename = utils.trim(args.filename)
     if not filename:
         logger.error(f"must specify the file path where the results will be saved")
         return
 
-    content = ""
-    fullpath = os.path.join(PATH, "data", "subscribes.txt")
-    if os.path.exists(fullpath) and os.path.isfile(fullpath):
-        with open(fullpath, "r", encoding="utf8") as f:
-            content = f.readlines()
-    # 初始化一个空列表用于存储所有匹配结果
-    groups = []
-
-    # 遍历 content 数组，对每个字符串进行正则表达式匹配
-    for text in content:
-        matches = re.findall(r"^https?:\/\/[^\s]+", text, flags=re.M)
-        groups.extend(matches)            
+    content = utils.http_get(url=url, timeout=30)
+    groups = re.findall(r"^https?:\/\/[^\s]+", content, flags=re.M)
     if not groups:
         logger.warning("cannot found any valid subscription")
         return

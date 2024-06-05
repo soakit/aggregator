@@ -1,0 +1,46 @@
+name: update Subscription Daily
+
+on:
+  schedule:
+    - cron: "0 18 * * 1-6" # 北京时间每周一到周六凌晨2点(18+8(东八区)-24)执行
+  workflow_dispatch: # 允许手动触发
+
+permissions:
+  contents: write
+
+jobs:
+  execute-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          pip3 install pyYAML requests
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Get Gist Raw URL
+        env:
+          GIST_ID: ${{ secrets.GIST_ID }}
+          FILE_NAME: subscribes.txt
+        run: |
+          gist_info=$(curl -s https://api.github.com/gists/$GIST_ID)
+          raw_url=$(echo $gist_info | jq -r ".files[\"$FILE_NAME\"].raw_url")
+          echo "Raw URL: $raw_url"
+
+      - name: Run merge.py with EXISTS_LINK
+        id: merge
+        run: |
+          python -u subscribe/merge.py -u $raw_url -f ./data/clash.yaml
+
+      - name: Create/Update Gist
+        env:
+          GH_TOKEN: ${{ secrets.PAT}}
+        run: |
+          cd ./data
+          gh gist edit ${{ secrets.GIST_ID }} --add "clash.yaml"
