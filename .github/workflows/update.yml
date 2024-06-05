@@ -25,6 +25,7 @@ jobs:
           pip3 install pyYAML requests
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Get Gist Raw URL
+        id: get-url
         env:
           GIST_ID: ${{ secrets.GIST_ID }}
           FILE_NAME: subscribes.txt
@@ -32,11 +33,15 @@ jobs:
           gist_info=$(curl -s https://api.github.com/gists/$GIST_ID)
           raw_url=$(echo $gist_info | jq -r ".files[\"$FILE_NAME\"].raw_url")
           echo "Raw URL: $raw_url"
+          echo "::set-output name=raw_url::$raw_url"
 
       - name: Run merge.py with EXISTS_LINK
         id: merge
+        env:
+          RAW_URL: ${{ steps.get-url.outputs.raw_url }}
         run: |
-          python -u subscribe/merge.py -u $raw_url -f ./data/clash.yaml
+          echo "Using Raw URL: $RAW_URL"
+          python subscribe/merge.py -u $RAW_URL -f ./data/clash.yaml
 
       - name: Create/Update Gist
         env:
