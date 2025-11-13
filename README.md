@@ -15,9 +15,32 @@
 
 ### 本地使用
 
+安装依赖
+
 ```shell
 pip3 install pyYAML tqdm
-python3 -u subscribe/collect.py -s
+```
+
+生成 clash.yaml 进行订阅分组，并上传到 github gist 上
+
+```shell
+python3 -u subscribe/collect.py --all -t clash -g <username>/<gist_id> -k <your_github_token>
+```
+
+参数说明：
+
+- --all 或 -a：生成完整的 Clash 配置文件（包含分组），而不仅仅是节点列表
+- --skip 或 -s：跳过代理可用性检查（你已经用过了，可以继续使用以节省时间）
+- --target 或 -t: - Output formats: clash, v2ray, singbox, mixed, etc. (default: clash, v2ray, singbox)
+- -g &lt;username>/<gist_id>：你的 GitHub Gist 地址，格式为 用户名/Gist ID
+- -k <your_github_token>：你的 GitHub Personal Access Token
+
+或者使用环境变量方式：
+
+```shell
+export GIST_LINK="username/gist_id"
+export GIST_PAT="your_github_personal_access_token"
+python3 -u subscribe/collect.py --all
 ```
 
 然后使用你的`clash`客户端导入`data/clash.yml`即可

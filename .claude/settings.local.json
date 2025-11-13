@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git log:*)",
+      "Bash(find:*)",
+      "Bash(git rev-list:*)",
+      "Bash(while read commit)",
+      "Bash(do git ls-tree -r --name-only $commit)",
+      "Bash(done)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
